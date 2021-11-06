@@ -22,6 +22,38 @@ class Observer {
         this.lowPriorityOperand = ['+', '-', '('];
         this.heightPriorityOperand = ['*', '÷'];
     }
+    doCalck(polishExpression) {
+        let steck = [];
+        let operand = this.lowPriorityOperand.concat(this.heightPriorityOperand);
+        let j=0;
+        for (let i = 0; i < polishExpression.length; i++) {
+            if (operand.includes(polishExpression[i])) {
+                switch (polishExpression[i]) {
+                    case '+':
+                        steck[j - 2] = steck[j - 2] + steck[j - 1];
+                        break;
+                    case '-':
+                        steck[j - 2] = steck[j - 2] - steck[j - 1];
+                        break;
+                    case '*':
+                        steck[j - 2] = steck[j - 2] * steck[j - 1];
+                        break;
+                    case '÷':
+                        steck[j - 2] = steck[j - 2] / steck[j - 1];
+                        break;
+                }
+                j=j-1;
+                steck.length=steck.length-1;
+            }
+            else {
+                steck.push(polishExpression[i]);
+                j++;
+            }
+        }
+        //console.log(steck[0]);
+        return steck[0];
+
+    };
     doPolish(expression) {
         let i = 0;
         let number = '';
@@ -90,12 +122,11 @@ class Observer {
         this.steck.reverse();
         this.outArr = this.outArr.concat(this.steck);
         this.steck = [];
-        console.log(this.outArr);
-        this.outArr = [];
-    };
-    doCalck(polishExpression) {
+        //console.log(this.outArr);
+        return this.doCalck(this.outArr);
 
     };
+
 
 }
 
