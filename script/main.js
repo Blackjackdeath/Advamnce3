@@ -1,6 +1,7 @@
 class expressionCalc {
     constructor() {
         this.observers = [];
+        this.result=0;
     }
     watch(observer) {
         this.observers.push(observer);
@@ -10,7 +11,7 @@ class expressionCalc {
     }
     equal(expression) {
         this.observers.forEach(observer => {
-            observer.doPolish(expression);
+            this.result=observer.doPolish(expression);
         })
     }
 }
@@ -25,25 +26,25 @@ class Observer {
     doCalck(polishExpression) {
         let steck = [];
         let operand = this.lowPriorityOperand.concat(this.heightPriorityOperand);
-        let j=0;
+        let j = 0;
         for (let i = 0; i < polishExpression.length; i++) {
             if (operand.includes(polishExpression[i])) {
                 switch (polishExpression[i]) {
                     case '+':
-                        steck[j - 2] = steck[j - 2] + steck[j - 1];
+                        steck[j - 2] = (steck[j - 2] + steck[j - 1]);
                         break;
                     case '-':
-                        steck[j - 2] = steck[j - 2] - steck[j - 1];
+                        steck[j - 2] = (steck[j - 2] - steck[j - 1]);
                         break;
                     case '*':
-                        steck[j - 2] = steck[j - 2] * steck[j - 1];
+                        steck[j - 2] = (steck[j - 2] * steck[j - 1]);
                         break;
                     case '÷':
-                        steck[j - 2] = steck[j - 2] / steck[j - 1];
+                        steck[j - 2] = (steck[j - 2] / steck[j - 1]);
                         break;
                 }
-                j=j-1;
-                steck.length=steck.length-1;
+                j = j - 1;
+                steck.length = steck.length - 1;
             }
             else {
                 steck.push(polishExpression[i]);
@@ -57,6 +58,7 @@ class Observer {
     doPolish(expression) {
         let i = 0;
         let number = '';
+        this.outArr=[];
         while (expression.length > 0) {
             if (!Number.isNaN(parseInt(expression[i]))) {
                 while (true) {
@@ -126,8 +128,6 @@ class Observer {
         return this.doCalck(this.outArr);
 
     };
-
-
 }
 
 const calculator = (function () {
@@ -148,12 +148,17 @@ const calculator = (function () {
     const calc1 = new expressionCalc;
     let equal = document.querySelector('[equal]');
     const obs = new Observer;
+    let equalCheck=false;
     function enterPoint() {
         if (curent.textContent === '') return;
         if (curent.textContent.includes('.')) return
         curent.textContent += this.textContent;
     }
     function enterNumber() {
+        if(equalCheck){
+            previos.textContent='';
+            equalCheck=false;
+        }
         curent.textContent += this.textContent;
         checkOperand = true;
         bracketOpenCheck = false;
@@ -166,6 +171,10 @@ const calculator = (function () {
         curent.textContent = curent.textContent.substr(0, curent.textContent.length - 1);
     };
     function enterOperand() {
+        if (equalCheck){
+            previos.textContent='';
+            equalCheck=false;
+        }
         if (previos.textContent === '' && curent.textContent === '') return;
         if (bracketOpenCheck) {
             previos.textContent = previos.textContent + '0';
@@ -203,7 +212,33 @@ const calculator = (function () {
         previos.textContent = previos.textContent + curent.textContent;
         calc1.watch(obs);
         calc1.equal(previos.textContent);
+        curent.textContent=calc1.result;
         calc1.clear(obs);
+        equalCheck=true;
+    }
+    function sqrFunction(){
+        if (previos.textContent!==''){
+            previos.textContent = previos.textContent + curent.textContent;
+            calc1.watch(obs);
+            calc1.equal(previos.textContent);
+            curent.textContent=calc1.result**2;
+            calc1.clear(obs);
+        }
+        else{
+            curent.textContent=parseFloat(curent.textContent)**2;
+        }
+    }
+    function sqrtFunction(){
+        if (previos.textContent!==''){
+            previos.textContent = previos.textContent + curent.textContent;
+            calc1.watch(obs);
+            calc1.equal(previos.textContent);
+            curent.textContent=Math.sqrt(calc1.result);
+            calc1.clear(obs);
+        }
+        else{
+            curent.textContent=Math.sqrt(parseFloat(curent.textContent));
+        }
     }
     function bindEvent() {
         buttonCalc.forEach(element => element.addEventListener('click', enterNumber));
@@ -213,7 +248,9 @@ const calculator = (function () {
         buttonOperand.forEach(element => element.addEventListener('click', enterOperand));
         bracketOpen.addEventListener('click', bracketOpenFunction);
         bracketClose.addEventListener('click', bracketCloseFunction);
-        equal.addEventListener('click', equalFunction)
+        equal.addEventListener('click', equalFunction);
+        operandSqr.addEventListener('click',sqrFunction);
+        operandSqrt.addEventListener('click', sqrtFunction);
     };
 
     return {
